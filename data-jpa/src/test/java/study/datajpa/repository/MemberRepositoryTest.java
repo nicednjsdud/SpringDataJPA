@@ -162,6 +162,6 @@ class MemberRepositoryTest {
         Member findMember = memberRepository.findMemberByUsername("AAA");
         Optional<Member> findMember2 = memberRepository.findOptionalByUsername("AAA");
         System.out.println("findMember = " + findMember);
-        
+
     }
 }

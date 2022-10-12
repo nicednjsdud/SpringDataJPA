@@ -12,7 +12,7 @@ import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long>,MemberRepositoryCustom {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
 
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
@@ -64,10 +64,21 @@ public interface MemberRepository extends JpaRepository<Member, Long>,MemberRepo
     @EntityGraph("Member.all")
     List<Member> findEntityGraphByUsername(@Param("username") String username);
 
-    @QueryHints(value= @QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
 
     // select for update
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Member> findLockByUsername(String username);
+
+    List<UsernameOnlyDto> findProjectionsByUsername(@Param("username") String username);
+
+    @Query(value = "select * from Member where username = ?", nativeQuery = true)
+    Member findByNativeQuery(String username);
+
+    @Query(value = "select m.member_id as id,m.username,t.name as teamName " +
+            "from member m left join team t",
+            countQuery = "select count(*) from member",
+            nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }

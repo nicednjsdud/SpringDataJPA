@@ -108,7 +108,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void testQuery(){
+    public void testQuery() {
         Member m1 = new Member("AAA", 10);
         Member m2 = new Member("BBB", 20);
         memberRepository.save(m1);
@@ -120,7 +120,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void findUserNameList(){
+    public void findUserNameList() {
         Member m1 = new Member("AAA", 10);
         Member m2 = new Member("BBB", 20);
         memberRepository.save(m1);
@@ -133,7 +133,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void findMemberDto(){
+    public void findMemberDto() {
         Team team = new Team("teamA");
         teamRepository.save(team);
 
@@ -150,7 +150,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void findByNames(){
+    public void findByNames() {
         Member m1 = new Member("AAA", 10);
         Member m2 = new Member("BBB", 20);
         memberRepository.save(m1);
@@ -161,9 +161,9 @@ class MemberRepositoryTest {
             System.out.println("member = " + member);
         }
     }
-    
+
     @Test
-    public void returnType(){
+    public void returnType() {
         Member m1 = new Member("AAA", 10);
         Member m2 = new Member("BBB", 20);
         memberRepository.save(m1);
@@ -210,7 +210,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void bulkUpdate(){
+    public void bulkUpdate() {
         //given
         memberRepository.save(new Member("member1", 10));
         memberRepository.save(new Member("member2", 19));
@@ -232,7 +232,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void findMemberLazy(){
+    public void findMemberLazy() {
 
         // given
         // member1 -> teamA
@@ -261,7 +261,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void queryHint(){
+    public void queryHint() {
         // given
         Member member1 = new Member("member1", 10);
         memberRepository.save(member1);
@@ -277,7 +277,7 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void lock(){
+    public void lock() {
         // given
         Member member1 = new Member("member1", 10);
         memberRepository.save(member1);
@@ -289,20 +289,20 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void callCustom(){
+    public void callCustom() {
         List<Member> result = memberRepository.findMemberCustom();
 
     }
 
     @Test
-    public void specBasic(){
+    public void specBasic() {
 
         // given
         Team teamA = new Team("teamA");
         em.persist(teamA);
 
-        Member m1 = new Member("m1",0,teamA);
-        Member m2 = new Member("m2",0,teamA);
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
         em.persist(m1);
         em.persist(m2);
 
@@ -320,13 +320,13 @@ class MemberRepositoryTest {
     }
 
     @Test
-    public void queryByExample(){
+    public void queryByExample() {
         // given
         Team teamA = new Team("teamA");
         em.persist(teamA);
 
-        Member m1 = new Member("m1",0,teamA);
-        Member m2 = new Member("m2",0,teamA);
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
         em.persist(m1);
         em.persist(m2);
 
@@ -338,16 +338,66 @@ class MemberRepositoryTest {
         Member member = new Member("m1");
         Team team = new Team("teamA");
         member.setTeam(team);
-        
+
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnorePaths("age");
 
-        Example<Member> example = Example.of(member,matcher);
+        Example<Member> example = Example.of(member, matcher);
 
         List<Member> result = memberRepository.findAll(example);
 
+        // then
         assertThat(result.get(0).getUsername()).isEqualTo("m1");
 
+
+    }
+
+    @Test
+    public void projections() {
+        // given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        // when
+        List<UsernameOnlyDto> result = memberRepository.findProjectionsByUsername("m1");
+
+        // then
+        for (UsernameOnlyDto usernameOnlyDto : result) {
+            System.out.println("usernameOnlyDto = " + usernameOnlyDto);
+        }
+
+    }
+
+    @Test
+    public void nativeQeury(){
+
+        // given
+        Team teamA = new Team("teamA");
+        em.persist(teamA);
+
+        Member m1 = new Member("m1", 0, teamA);
+        Member m2 = new Member("m2", 0, teamA);
+        em.persist(m1);
+        em.persist(m2);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Page<MemberProjection> result = memberRepository.findByNativeProjection(PageRequest.of(0, 10));
+        List<MemberProjection> content = result.getContent();
+        for (MemberProjection memberProjection : content) {
+            System.out.println("memberProjection.getUsername() = " + memberProjection.getUsername());
+            System.out.println("memberProjection.getTeamName() = " + memberProjection.getTeamName());
+        }
 
     }
 }
